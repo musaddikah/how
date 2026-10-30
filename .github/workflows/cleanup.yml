@@ -1,0 +1,53 @@
+name: Auto Delete HTML After 8 Hours
+
+on:
+  schedule:
+    - cron: "*/8 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Delete HTML files after 6 hours
+        shell: bash
+        run: |
+          NOW=$(date +%s)
+          DELETED=0
+
+          while IFS= read -r -d '' FILE; do
+            LAST_COMMIT=$(git log -1 --follow --format=%ct -- "$FILE")
+
+            if [ -z "$LAST_COMMIT" ]; then
+              continue
+            fi
+
+            AGE=$((NOW - LAST_COMMIT))
+
+            if [ "$AGE" -ge 21600 ]; then
+              git rm -- "$FILE"
+              DELETED=1
+              echo "Deleted: $FILE"
+            fi
+          done < <(
+            find article -maxdepth 1 -type f \
+              -iname "*.html" \
+              ! -iname "index.html" \
+              -print0
+          )
+
+          if [ "$DELETED" -eq 1 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Delete HTML files older than 8 hours"
+            git push
+          else
+            echo "No expired HTML files found."
+          fi
