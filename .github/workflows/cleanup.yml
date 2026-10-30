@@ -37,7 +37,7 @@ jobs:
               echo "Deleted: $FILE"
             fi
           done < <(
-            find article -maxdepth 1 -type f \
+            find vit -maxdepth 1 -type f \
               -iname "*.html" \
               ! -iname "index.html" \
               -print0
