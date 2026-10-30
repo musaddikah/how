@@ -1,8 +1,9 @@
+
 name: Auto Delete HTML After 8 Hours
 
 on:
   schedule:
-    - cron: "*/8 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Delete HTML files after 6 hours
+      - name: Delete HTML files after 8 hours
         shell: bash
         run: |
           NOW=$(date +%s)
@@ -31,7 +32,7 @@ jobs:
 
             AGE=$((NOW - LAST_COMMIT))
 
-            if [ "$AGE" -ge 21600 ]; then
+            if [ "$AGE" -ge 28800 ]; then
               git rm -- "$FILE"
               DELETED=1
               echo "Deleted: $FILE"
